@@ -1,0 +1,38 @@
+# Folders and files from Python
+__pycache__/
+*.py[cod]
+*.so
+
+# Virtuals environnements
+.venv/
+env/
+venv/
+*.env
+*.venv
+.python-version
+
+# Poetry
+poetry.lock
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+
+# Logs and temp files
+*.log
+*.out
+*.pid
+*.gz
+*.tmp
+*.swp
+*.DS_Store
+
+# Specific files from IDE/OS
+.vscode/
+.idea/
+*.sublime-workspace
+Thumbs.db
+
+#  Train models
+model.pkl
+models/
+checkpoints/

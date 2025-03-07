@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Swag Digit Classifier 3000</title>
+    <style>
+        body {
+            text-align: center;
+        }
+
+        canvas {
+            border: 2px solid #000;
+            background-color: white;
+        }
+    </style>
+</head>
+
+<div id="content">
+    <h1>SwagDigitClassifier3000</h1>
+    <p>Please draw a digit and press the send button.</p>
+    <canvas id="myDigit" width="300" height="300"></canvas>
+    <p>
+        <button id="clear">Clear</button>
+        <button id="send">Send</button>
+    </p>
+    <p id="results"></p>
+</div>
+<script>
+    var canvas = document.getElementById('myDigit');
+    var context = canvas.getContext('2d');
+    context.fillStyle = "white";
+    context.fillRect(0, 0, context.canvas.width, context.canvas.height);
+    let isDrawing = false;
+    let x = 0;
+    let y = 0;
+    var clearButton = document.getElementById('clear').addEventListener('click', clearArea);
+    var sendButton = document.getElementById('send').addEventListener('click', postArea);
+    var results = document.getElementById('results');
+
+
+    // event.offsetX, event.offsetY gives the (x,y) offset from the edge of the canvas.
+
+    // Add the event listeners for mousedown, mousemove, and mouseup
+    canvas.addEventListener('mousedown', (e) => {
+        x = e.offsetX;
+        y = e.offsetY;
+        isDrawing = true;
+    });
+
+    canvas.addEventListener('mousemove', (e) => {
+        if (isDrawing) {
+            drawLine(context, x, y, e.offsetX, e.offsetY);
+            x = e.offsetX;
+            y = e.offsetY;
+        }
+    });
+
+    canvas.addEventListener('mouseup', (e) => {
+        if (isDrawing) {
+            drawLine(context, x, y, e.offsetX, e.offsetY);
+            x = 0;
+            y = 0;
+            isDrawing = false;
+        }
+    });
+
+    function drawLine(context, x1, y1, x2, y2) {
+        context.beginPath();
+        context.strokeStyle = 'black';
+        context.lineWidth = 30;
+        context.lineJoin = "round";
+        context.moveTo(x1, y1);
+        context.lineTo(x2, y2);
+        context.closePath();
+        context.stroke();
+    }
+
+    function clearArea() {
+        context.setTransform(1, 0, 0, 1, 0, 0);
+        context.clearRect(0, 0, context.canvas.width, context.canvas.height);
+
+        // Fill canvas with  white to avoid transparency issue
+        context.fillStyle = "white";
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        // Reset answer
+        // results.innerHTML = "";
+        // // force caches
+        canvas.toDataURL("image/png");
+    }
+
+    function postArea() {
+        fetch("http://127.0.0.1:5000/api/predict", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ "image": canvas.toDataURL("image/png") }),
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                results.innerHTML = data.result
+                console.log(data);
+            });
+    }
+</script>
+
+</html>

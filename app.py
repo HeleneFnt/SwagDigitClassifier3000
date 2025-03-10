@@ -1,3 +1,4 @@
+from http.client import REQUEST_TIMEOUT
 import pickle
 from flask import Flask, render_template, request, jsonify
 import base64
@@ -5,8 +6,14 @@ import io
 from PIL import Image, ImageOps
 import matplotlib.pyplot as plt
 import numpy as np
+from prometheus_client import start_http_server, Summary
+import time
 
 app = Flask(__name__)
+
+
+# Determine metric
+REQUEST_TIMEOUT = Summary('request_processing_seconds', 'Time spent processing request')
 
 # Load model
 f = open("digit_classifier.pkl" , 'rb')
@@ -18,9 +25,11 @@ model = pickle.load(f)
 def index():
     return render_template('index.html')
 
-# Evil road 666
+# Evil road 666 and decorate function with metrics 
 @app.route('/api/predict', methods=['POST'])
+@REQUEST_TIMEOUT.time() 
 def predict():
+    start_time = time.time() # start time metric
     data = request.get_json()
     
     # Decode the base64 image
@@ -44,7 +53,13 @@ def predict():
 
     result = model.predict(img_array)
     print(model.predict_proba(img_array))
+
+    elapsed_time = time.time() - start_time
+    print(f"Prediction: {result}, Time taken: {elapsed_time:.4f} sec")
+
     return jsonify({"result":str(result[0])})
 
 if __name__ == '__main__':
+    # Start prometheus on port 8000
+    start_http_server(8000)
     app.run(host='0.0.0.0', port= 5000, debug=True)

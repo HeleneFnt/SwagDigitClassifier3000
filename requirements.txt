@@ -3,3 +3,4 @@ pillow
 numpy
 scikit-learn
 matplotlib
+prometheus-client

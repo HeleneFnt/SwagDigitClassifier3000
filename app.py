@@ -6,14 +6,17 @@ import io
 from PIL import Image, ImageOps
 import matplotlib.pyplot as plt
 import numpy as np
-from prometheus_client import start_http_server, Summary
+from prometheus_client import start_http_server, Summary, Counter, Gauge
 import time
 
 app = Flask(__name__)
 
 
-# Determine metric
+# Determine metrics
 REQUEST_TIMEOUT = Summary('request_processing_seconds', 'Time spent processing request')
+TOTAL_PREDICTIONS = Counter('total_predictions', 'Total number of predictions made')
+PREDICTED_VALUE = Gauge('predicted_value', 'Last predicted value')
+PREDICTION_TIMESTAMPS = Counter('prediction_timestamps', 'Timestamps of predictions')
 
 # Load model
 f = open("digit_classifier.pkl" , 'rb')
@@ -54,6 +57,11 @@ def predict():
     result = model.predict(img_array)
     print(model.predict_proba(img_array))
 
+    # Prometheus metrics update
+    TOTAL_PREDICTIONS.inc()
+    PREDICTED_VALUE.set(result)
+    PREDICTION_TIMESTAMPS.inc()
+
     elapsed_time = time.time() - start_time
     print(f"Prediction: {result}, Time taken: {elapsed_time:.4f} sec")
 
@@ -62,4 +70,4 @@ def predict():
 if __name__ == '__main__':
     # Start prometheus on port 8000
     start_http_server(8000)
-    app.run(host='0.0.0.0', port= 5000, debug=True)
+    app.run(host='0.0.0.0', port= 5000, debug=True, use_reloader=False) # Disable flask reloader for 'OSError: [Errno 98] Address already in use issue'

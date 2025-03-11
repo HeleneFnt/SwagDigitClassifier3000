@@ -25,6 +25,10 @@
         <button id="send">Send</button>
     </p>
     <p id="results"></p>
+
+    <p>(wanna help us?)</p>
+    <p>Write the true result here ----> <input type="text" id="trueLabel"> <button onclick="sendHelp()">send my help</button></p>
+
 </div>
 <script>
     var canvas = document.getElementById('myDigit');
@@ -101,6 +105,23 @@
             .then((data) => {
                 results.innerHTML = data.result
                 console.log(data);
+            });
+    }
+    function sendHelp() {
+        let image = canvas.toDataURL("image/png");
+        let trueLabel = document.getElementById("trueLabel").value;
+        if (!trueLabel) {
+            alert("Please enter the true label");
+            return;
+        }
+        fetch("http://127.0.0.1:5000/helpdata", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ image: image, label: trueLabel })
+        })
+            .then(response => response.json())
+            .then(data => {
+                alert("Thanks for your help!");
             });
     }
 </script>

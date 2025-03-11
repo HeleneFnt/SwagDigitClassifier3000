@@ -8,8 +8,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 from prometheus_client import start_http_server, Summary, Counter, Gauge, generate_latest, CONTENT_TYPE_LATEST
 import time
+import os
 
 app = Flask(__name__)
+
+# Ensure help_data directory exists
+HELP_DATA_DIR = "help_data"
+os.makedirs(HELP_DATA_DIR, exist_ok=True)
 
 
 # Determine metrics
@@ -72,6 +77,17 @@ def predict():
 def metrics():
     return generate_latest(), 200, {'Content-Type': CONTENT_TYPE_LATEST}
 
+@app.route('/helpdata', methods=['POST'])
+def collect_help_data():
+    data = request.get_json()
+    base64_img = data['image'].split(',')[1]
+    label = data['label']
+    timestamp = int(time.time())
+    filename = f"{timestamp}-{label}.png"
+    
+    img = Image.open(io.BytesIO(base64.b64decode(base64_img)))
+    img.save(os.path.join(HELP_DATA_DIR, filename))
+    return jsonify({"message": "Data saved successfully"})
 
 if __name__ == '__main__':
     # Start prometheus on port 8000

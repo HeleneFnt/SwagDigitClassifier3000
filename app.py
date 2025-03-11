@@ -6,7 +6,7 @@ import io
 from PIL import Image, ImageOps
 import matplotlib.pyplot as plt
 import numpy as np
-from prometheus_client import start_http_server, Summary, Counter, Gauge
+from prometheus_client import start_http_server, Summary, Counter, Gauge, generate_latest, CONTENT_TYPE_LATEST
 import time
 
 app = Flask(__name__)
@@ -66,6 +66,12 @@ def predict():
     print(f"Prediction: {result}, Time taken: {elapsed_time:.4f} sec")
 
     return jsonify({"result":str(result[0])})
+
+# Expose Prometheus metrics
+@app.route('/metrics')
+def metrics():
+    return generate_latest(), 200, {'Content-Type': CONTENT_TYPE_LATEST}
+
 
 if __name__ == '__main__':
     # Start prometheus on port 8000

@@ -3,6 +3,7 @@ import pickle
 import numpy as np
 import setuptools
 import os
+from datetime import datetime
 
 # Patch NumPy 2.0 : define np.float_ if not exist to fix this AttributeError: `np.float_` was removed in the NumPy 2.0 release. Use `np.float64` instead
 if not hasattr(np, 'float_'):
@@ -20,6 +21,9 @@ with open("digit_classifier.pkl", 'rb') as f:
     model = pickle.load(f)
 # print(type(model))
 
+# Generate model ID
+model_id = f"digit_classifier_{datetime.now().strftime('%Y%m%d%H%M%S')}"
+
 # Save model in  modelstore
-meta_data = model_store.sklearn.upload("other", model = model, model_id="test")
+meta_data = model_store.sklearn.upload("digit_classifier", model = model, model_id = model_id)
 print(f"Model sucessfully load! MetaData : {meta_data}")

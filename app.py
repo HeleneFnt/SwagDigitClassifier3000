@@ -1,5 +1,4 @@
 from http.client import REQUEST_TIMEOUT
-import pickle
 from flask import Flask, render_template, request, jsonify
 import base64
 import io
@@ -9,6 +8,7 @@ import numpy as np
 from prometheus_client import start_http_server, Summary, Counter, Gauge, generate_latest, CONTENT_TYPE_LATEST
 import time
 import os
+from modelstore import ModelStore
 
 app = Flask(__name__)
 
@@ -17,15 +17,28 @@ HELP_DATA_DIR = "help_data"
 os.makedirs(HELP_DATA_DIR, exist_ok=True)
 
 
+# Define stockage directory
+MODEL_DIR = "models"
+os.makedirs(MODEL_DIR, exist_ok=True)
+
+# Initiate ModelStore with a local storage
+model_store = ModelStore.from_file_system(root_directory=MODEL_DIR)
+
+
+# Load last
+model_ids = model_store.list_versions('digit_classifier')
+latest_model_id = model_ids[0]
+print(f"Loading latest model with ID: {latest_model_id}")
+
+
+model = model_store.load('digit_classifier', model_id=latest_model_id)
+
+
 # Determine metrics
 REQUEST_TIMEOUT = Summary('request_processing_seconds', 'Time spent processing request')
 TOTAL_PREDICTIONS = Counter('total_predictions', 'Total number of predictions made')
 PREDICTED_VALUE = Gauge('predicted_value', 'Last predicted value')
 PREDICTION_TIMESTAMPS = Counter('prediction_timestamps', 'Timestamps of predictions')
-
-# Load model
-f = open("digit_classifier.pkl" , 'rb')
-model = pickle.load(f)
 
 
 # Route 66

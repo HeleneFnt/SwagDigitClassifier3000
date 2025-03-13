@@ -25,7 +25,7 @@ os.makedirs(MODEL_DIR, exist_ok=True)
 model_store = ModelStore.from_file_system(root_directory=MODEL_DIR)
 
 
-# Load last
+# Load latest model
 model_ids = model_store.list_versions('digit_classifier')
 latest_model_id = model_ids[0]
 print(f"Loading latest model with ID: {latest_model_id}")
